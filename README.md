@@ -1,1 +1,1 @@
-# Projet Simulation d'Automates
+# Projet Simulation d'Automates avec IA
