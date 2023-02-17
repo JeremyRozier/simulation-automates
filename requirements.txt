@@ -1,3 +1,4 @@
 automata-lib
 graphviz
 matplotlib
+exrex

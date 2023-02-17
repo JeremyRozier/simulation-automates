@@ -3,16 +3,35 @@ from automata.fa.nfa import NFA
 from automata.fa.gnfa import GNFA
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import exrex
 
 
 class Automaton(NFA):
     def __init__(self, states, input_symbols, transitions, initial_state, final_states):
-        super().__init__(states=states, input_symbols=input_symbols, transitions=transitions,
-                         initial_state=initial_state, final_states=final_states)
+        super().__init__(
+            states=states,
+            input_symbols=input_symbols,
+            transitions=transitions,
+            initial_state=initial_state,
+            final_states=final_states,
+        )
+
+    def __setattr__(self, name, value):
+        """Overrides __setattr__ to allow making other attributes"""
+        pass
 
     @staticmethod
-    def random_automaton(alphabet, min_states, max_states, trans_density, init_amount, final_amount, init_range=0,
-                         final_range=0, seed=None):
+    def random_automaton(
+        alphabet,
+        min_states,
+        max_states,
+        trans_density,
+        init_amount,
+        final_amount,
+        init_range=0,
+        final_range=0,
+        seed=None,
+    ):
         """
         This function creates a random automaton with desired probabilities
 
@@ -29,12 +48,12 @@ class Automaton(NFA):
         """
         if seed is not None:
             random.seed(seed)
-        states = {'init'}
+        states = {"init"}
         for i in range(random.randint(min_states, max_states)):
             states.add(i)
-        trans = {'init': {'': set()}}
-        for state_in in states.difference({'init'}):
-            for state_out in states.difference({'init'}):
+        trans = {"init": {"": set()}}
+        for state_in in states.difference({"init"}):
+            for state_out in states.difference({"init"}):
                 for char in alphabet:
                     if random.random() < trans_density:
                         try:
@@ -44,25 +63,69 @@ class Automaton(NFA):
                                 trans[state_in][char] = {state_out}
                             except KeyError:
                                 trans[state_in] = {char: {state_out}}
-        init = random.sample(states.difference({'init'}),
-                             max(init_amount + random.randint(-init_range, init_range), 1))
+        init = random.choices(
+            list(states.difference({"init"})),
+            k=max(init_amount + random.randint(-init_range, init_range), 1),
+        )
         for i in init:
-            trans['init'][''].add(i)
-        final = set(random.sample(states.difference({'init'}),
-                    max(final_amount + random.randint(-final_range, final_range), 0)))
-        return Automaton(states, alphabet, trans, 'init', final)
+            trans["init"][""].add(i)
+        final = set(
+            random.choices(
+                list(states.difference({"init"})),
+                k=max(final_amount + random.randint(-final_range, final_range), 0),
+            )
+        )
+        return Automaton(states, alphabet, trans, "init", final)
 
     def __str__(self):
         try:
-            open('./display.png', "x")
+            open("./display.png", "x")
         except FileExistsError:
             pass
-        self.show_diagram(path='./display.png')
-        plt.figure('Automate')
-        plt.axis('off')
-        plt.imshow(mpimg.imread('display.png'))
+        self.show_diagram(path="./display.png")
+        plt.figure("Automate")
+        plt.axis("off")
+        plt.imshow(mpimg.imread("display.png"))
         plt.show()
         return super.__str__(self)
 
-    def regex(self):
+    def get_random_accepted_words(self, nb):
+        """
+        Generate nb different words
+        :param nb: number of words to generate (int)
+        :return: list of generated words (list)
+        """
+        reachable_states = self._compute_reachable_states(
+            self.initial_state, self.input_symbols, self.transitions
+        )
+        if not any([state in self.final_states for state in reachable_states]):
+            print("The language of this automaton is the empty gather.")
+            return
+        regex = self.get_regex()
+        if "*" not in regex and "+" not in regex:
+            max_words = exrex.count(regex)
+            if nb > max_words:
+                nb = max_words
+        list_words = list()
+        while len(list_words) < nb:
+            generated_word = exrex.getone(regex, limit=5)
+            if generated_word not in list_words:
+                list_words.append(generated_word)
+
+        return list_words
+
+    def get_regex(self):
         return GNFA.from_nfa(self).to_regex()
+
+
+if __name__ == "__main__":
+    alphabet = {"a", "b"}
+    min_states = 3
+    max_states = 3
+    trans_density = 0.1
+    init_amount = 1
+    final_amount = 3
+    automaton = Automaton.random_automaton(
+        alphabet, min_states, max_states, trans_density, init_amount, final_amount
+    )
+    print(len(automaton.get_random_accepted_words(1000)))
