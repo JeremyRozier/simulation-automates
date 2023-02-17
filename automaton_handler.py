@@ -49,7 +49,7 @@ class Automaton(NFA):
         for i in init:
             trans['init'][''].add(i)
         final = set(random.sample(states.difference({'init'}),
-                    final_amount + random.randint(-final_range, final_range)))
+                    max(final_amount + random.randint(-final_range, final_range), 0)))
         return Automaton(states, alphabet, trans, 'init', final)
 
     def __str__(self):
