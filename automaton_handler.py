@@ -46,7 +46,6 @@ class Automaton(NFA):
                                 trans[state_in] = {char: {state_out}}
         init = random.sample(states.difference({'init'}),
                              max(init_amount + random.randint(-init_range, init_range), 1))
-        print(init)
         for i in init:
             trans['init'][''].add(i)
         final = set(random.sample(states.difference({'init'}),
