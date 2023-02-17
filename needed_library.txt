@@ -1,2 +1,0 @@
-automata-lib ('pip install automata-lib')
-graphviz ('sudo apt install graphviz')
