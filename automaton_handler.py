@@ -103,16 +103,25 @@ class Automaton(NFA):
             print("The language of this automaton is the empty gather.")
             return None
         regex = self.get_regex()
+        if regex == "":
+            return[""]
         if "*" not in regex and "+" not in regex:
             max_words = exrex.count(regex)
             if nb > max_words:
                 nb = max_words
         list_words = list()
+        same = 0
         while len(list_words) < nb:
-            generated_word = exrex.getone(regex, limit=5)
+            buffer = list_words.copy()
+            generated_word = exrex.getone(regex, limit=30)
             if generated_word not in list_words:
                 list_words.append(generated_word)
-
+            if buffer == list_words:
+                same += 1
+            else:
+                same = 0
+            if same >= 100:
+                break
         return list_words
 
     def get_random_declined_words(self, nb):
@@ -129,15 +138,14 @@ class Automaton(NFA):
 
 if __name__ == "__main__":
     alphabet = {"a", "b"}
-    min_states = 3
-    max_states = 5
+    min_states = 1
+    max_states = 1
     trans_density = 0.12
     init_amount = 1
     final_amount = 1
-    init_range = 1
-    final_range = 1
+    init_range = 0
+    final_range = 0
     automaton = Automaton.random_automaton(
         alphabet, min_states, max_states, trans_density, init_amount, final_amount, init_range, final_range
     )
     print(automaton)
-    
