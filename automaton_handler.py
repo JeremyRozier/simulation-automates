@@ -34,7 +34,6 @@ class Automaton(NFA):
     ):
         """
         This function creates a random automaton with desired probabilities
-
         :param alphabet: set of the alphabet used by the automaton (set of str)
         :param min_states: minimum amount of states (int)
         :param max_states: maximum amount of states (int)
@@ -63,18 +62,20 @@ class Automaton(NFA):
                                 trans[state_in][char] = {state_out}
                             except KeyError:
                                 trans[state_in] = {char: {state_out}}
-        init = random.choices(
-            list(states.difference({"init"})),
-            k=max(init_amount + random.randint(-init_range, init_range), 1),
-        )
+        init = set()
+        for i in range(max(init_amount + random.randint(-init_range, init_range), 1)):
+            if len(states.difference(init.union({"init"}))) > 0:
+                init.add(random.choice(list(states.difference(init.union({"init"})))))
+            else:
+                break
         for i in init:
             trans["init"][""].add(i)
-        final = set(
-            random.choices(
-                list(states.difference({"init"})),
-                k=max(final_amount + random.randint(-final_range, final_range), 0),
-            )
-        )
+        final = set()
+        for i in range(max(final_amount + random.randint(-final_range, final_range), 0)):
+            if len(states.difference(final.union({"init"}))) > 0:
+                final.add(random.choice(list(states.difference(final.union({"init"})))))
+            else:
+                break
         return Automaton(states, alphabet, trans, "init", final)
 
     def __str__(self):
@@ -91,7 +92,7 @@ class Automaton(NFA):
 
     def get_random_accepted_words(self, nb):
         """
-        Generate nb different words
+        Generate nb different accepted words
         :param nb: number of words to generate (int)
         :return: list of generated words (list)
         """
@@ -100,7 +101,7 @@ class Automaton(NFA):
         )
         if not any([state in self.final_states for state in reachable_states]):
             print("The language of this automaton is the empty gather.")
-            return
+            return None
         regex = self.get_regex()
         if "*" not in regex and "+" not in regex:
             max_words = exrex.count(regex)
@@ -114,6 +115,14 @@ class Automaton(NFA):
 
         return list_words
 
+    def get_random_declined_words(self, nb):
+        """
+        Generate nb declined words
+        :param nb: number of words to generate (int)
+        :return: list of generated words (list)
+        """
+        return self.reverse().get_random_accepted_words(nb)
+
     def get_regex(self):
         return GNFA.from_nfa(self).to_regex()
 
@@ -121,11 +130,14 @@ class Automaton(NFA):
 if __name__ == "__main__":
     alphabet = {"a", "b"}
     min_states = 3
-    max_states = 3
-    trans_density = 0.1
+    max_states = 5
+    trans_density = 0.12
     init_amount = 1
-    final_amount = 3
+    final_amount = 1
+    init_range = 1
+    final_range = 1
     automaton = Automaton.random_automaton(
-        alphabet, min_states, max_states, trans_density, init_amount, final_amount
+        alphabet, min_states, max_states, trans_density, init_amount, final_amount, init_range, final_range
     )
-    print(len(automaton.get_random_accepted_words(1000)))
+    print(automaton)
+    
