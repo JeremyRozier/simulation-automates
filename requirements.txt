@@ -2,3 +2,4 @@ automata-lib
 graphviz
 matplotlib
 exrex
+numpy
