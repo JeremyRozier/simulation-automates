@@ -4,6 +4,7 @@ from automata.fa.gnfa import GNFA
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import exrex
+import numpy as np
 
 
 class Automaton(NFA):
@@ -22,15 +23,15 @@ class Automaton(NFA):
 
     @staticmethod
     def random_automaton(
-        alphabet,
-        min_states,
-        max_states,
-        trans_density,
-        init_amount,
-        final_amount,
-        init_range=0,
-        final_range=0,
-        seed=None,
+            alphabet,
+            min_states,
+            max_states,
+            trans_density,
+            init_amount,
+            final_amount,
+            init_range=0,
+            final_range=0,
+            seed=None,
     ):
         """
         This function creates a random automaton with desired probabilities
@@ -104,7 +105,7 @@ class Automaton(NFA):
             return None
         regex = self.get_regex()
         if regex == "":
-            return[""]
+            return [""]
         if "*" not in regex and "+" not in regex:
             max_words = exrex.count(regex)
             if nb > max_words:
@@ -124,13 +125,44 @@ class Automaton(NFA):
                 break
         return list_words
 
-    def get_random_declined_words(self, nb):
+    def classify_words(self, nb):
         """
-        Generate nb declined words
-        :param nb: number of words to generate (int)
-        :return: list of generated words (list)
+        This function creates a 2 dimensional array with shape (np, 2) where the first column is a word in the alphabet
+        and the second column is "1" if the word on the same row is accepted by the automaton and "0" otherwise
+        :param nb: number of word in the array
+        :return: 2 dimensional array with shape (np, 2) and datatype=str
         """
-        return self.reverse().get_random_accepted_words(nb)
+        classified = 0
+        sigma_star = Automaton({0},
+                               self.input_symbols,
+                               {0: {char: {0} for char in self.input_symbols}},
+                               0,
+                               {0}).get_regex()
+        classification = []
+        for word in exrex.generate(sigma_star, limit=100):
+            classification.append([word, int(self.accepts_input(word))])
+            classified += 1
+            if classified >= nb:
+                return np.array(classification)
+
+    def make_complete(self):
+        """
+        this function makes an equivalent complete NFA
+        :return: None
+        """
+        states = set(self.states)
+        states.add("well")
+        transitions = dict()
+        for key in self.transitions.keys():
+            transitions[key] = {char: set(self.transitions[key][char]) for char in self.transitions[key].keys()}
+        for state in states.difference({"init"}):
+            if state not in transitions.keys():
+                transitions[state] = {char: {"well"} for char in self.input_symbols}
+            else:
+                for char in self.input_symbols:
+                    if char not in transitions[state].keys():
+                        transitions[state][char] = {"well"}
+        return Automaton(states, self.input_symbols, transitions, self.initial_state, self.final_states)
 
     def get_regex(self):
         return GNFA.from_nfa(self).to_regex()
@@ -138,14 +170,15 @@ class Automaton(NFA):
 
 if __name__ == "__main__":
     alphabet = {"a", "b"}
-    min_states = 1
-    max_states = 1
+    min_states = 5
+    max_states = 10
     trans_density = 0.12
-    init_amount = 1
-    final_amount = 1
-    init_range = 0
-    final_range = 0
+    init_amount = 2
+    final_amount = 2
+    init_range = 1
+    final_range = 1
     automaton = Automaton.random_automaton(
         alphabet, min_states, max_states, trans_density, init_amount, final_amount, init_range, final_range
     )
     print(automaton)
+    
