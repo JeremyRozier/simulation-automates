@@ -168,10 +168,3 @@ if __name__ == "__main__":
         init_range,
         final_range,
     )
-    print(
-        [
-            automaton.accepts_input(word)
-            for word in automaton.get_random_declined_words(10)
-        ]
-    )
-    print(automaton)
