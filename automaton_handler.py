@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import exrex
 import numpy as np
+import pickle
 
 
 class Automaton(NFA):
@@ -14,14 +15,14 @@ class Automaton(NFA):
         input_symbols,
         transitions,
         initial_state,
-        final_states,
+        final_states
     ):
         super().__init__(
             states=states,
             input_symbols=input_symbols,
             transitions=transitions,
             initial_state=initial_state,
-            final_states=final_states,
+            final_states=final_states
         )
 
     def __setattr__(self, name, value):
@@ -38,7 +39,7 @@ class Automaton(NFA):
         final_amount,
         init_range=0,
         final_range=0,
-        seed=None,
+        seed=None
     ):
         """
         This function creates a random
@@ -147,6 +148,33 @@ class Automaton(NFA):
 
     def get_regex(self):
         return GNFA.from_nfa(self).to_regex()
+
+    def save_automaton(self, name):
+        """
+        This function saves the automaton in a pickle file
+        :param name: name of the automaton (str)
+        :return: None
+        """
+        file_name = "{}.pkl".format(name)
+        with open(file_name, "wb") as file:
+            pickle.dump((self.states,
+                         self.input_symbols,
+                         self.transitions,
+                         self.initial_state,
+                         self.final_states)
+                        , file)
+            print("Automaton saved in {}".format(file_name))
+
+    @staticmethod
+    def load_automaton(file_name):
+        """
+        This function load a saved automaton
+        :param file_name: name of the file containing the automaton (str)
+        :return: Automaton object
+        """
+        with open(file_name, "rb") as file:
+            info = pickle.load(file)
+            return Automaton(info[0], info[1], info[2], info[3], info[4])
 
 
 if __name__ == "__main__":
