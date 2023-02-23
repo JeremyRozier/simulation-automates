@@ -10,12 +10,12 @@ import pickle
 
 class Automaton(NFA):
     def __init__(
-        self,
-        states,
-        input_symbols,
-        transitions,
-        initial_state,
-        final_states
+            self,
+            states,
+            input_symbols,
+            transitions,
+            initial_state,
+            final_states
     ):
         super().__init__(
             states=states,
@@ -31,15 +31,15 @@ class Automaton(NFA):
 
     @staticmethod
     def random_automaton(
-        alphabet,
-        min_states,
-        max_states,
-        trans_density,
-        init_amount,
-        final_amount,
-        init_range=0,
-        final_range=0,
-        seed=None
+            alphabet,
+            min_states,
+            max_states,
+            trans_density,
+            init_amount,
+            final_amount,
+            init_range=0,
+            final_range=0,
+            seed=None
     ):
         """
         This function creates a random
@@ -78,10 +78,10 @@ class Automaton(NFA):
                                 trans[state_in] = {char: {state_out}}
         init = set()
         for i in range(
-            max(
-                init_amount + random.randint(-init_range, init_range),
-                1,
-            )
+                max(
+                    init_amount + random.randint(-init_range, init_range),
+                    1,
+                )
         ):
             if len(states.difference(init.union({"init"}))) > 0:
                 init.add(
@@ -95,10 +95,10 @@ class Automaton(NFA):
             trans["init"][""].add(i)
         final = set()
         for i in range(
-            max(
-                final_amount + random.randint(-final_range, final_range),
-                0,
-            )
+                max(
+                    final_amount + random.randint(-final_range, final_range),
+                    0,
+                )
         ):
             if len(states.difference(final.union({"init"}))) > 0:
                 final.add(
@@ -122,14 +122,46 @@ class Automaton(NFA):
         plt.show()
         return super.__str__(self)
 
+    def get_one_hot_index(self):
+        return {list(self.input_symbols)[i]: i for i in range(len(self.input_symbols))}
+
+    def one_hot_encoder(self, word, length):
+        """
+        This function encode a word in the one-hot format
+        :param word: word to encode (str)
+        :param length: length of the one-hot array used for encoding
+        :return: array with shape (len(self.input_symbols), length) filled with 0 and 1
+        """
+        encoded = np.zeros((len(self.input_symbols), length))
+        for i in range(len(word)):
+            encoded[self.get_one_hot_index()[word[i]]][i] = 1
+        return encoded
+
+    def one_hot_decoder(self, encoded):
+        """
+        This function returns the word encoded in a one-hot array
+        :param encoded: one-hot array to decode
+        :return: decoded word (str)
+        """
+        word = ""
+        one_hot_index = tuple(self.get_one_hot_index().keys())
+        for col in range(np.shape(encoded)[1]):
+            index = np.argwhere(np.hsplit(encoded, np.shape(encoded)[1])[col].reshape((np.shape(encoded)[0],)))
+            if np.shape(index)[0]:
+                word += one_hot_index[index[0][0]]
+            else:
+                break
+        return word
+
     def classify_words(self, nb):
         """
-        This function creates a 2 dimensional array with shape (np, 2) where
-        the first column is a word in the alphabet
-        and the second column is "1" if the word on the same row is accepted
-        by the automaton and "0" otherwise
-        :param nb: number of word in the array
-        :return: 2 dimensional array with shape (np, 2) and datatype=str
+        This function creates a 2 array. One with shape (nb, alphabet_length, word_max_length) where nb in the number of
+        words classified, alphabet_length is the amount of character in the alphabet and word_max_length is the length
+        of the longest word classified. Ths array stores all the words classified encoded in one hot format.
+        The second array with shape (nb, ) stores a one in it's x index if the x classified word if accepted by the
+        automaton and a 0 otherwise.
+        :param nb: number of word to classify
+        :return: 2 arrays with shape (nb, alphabet_length, word_max_length) and (nb, ) and dtype=float64
         """
         classified = 0
         sigma_star = Automaton(
@@ -137,16 +169,23 @@ class Automaton(NFA):
             self.input_symbols,
             {0: {char: {0} for char in self.input_symbols}},
             0,
-            {0},
+            {0}
         ).get_regex()
-        classification = []
+        one_hot_words = []
+        tag = []
+        length = round(np.log(nb) / np.log(len(self.input_symbols))) + 1
         for word in exrex.generate(sigma_star, limit=100):
-            classification.append([word, int(self.accepts_input(word))])
+            encoded = self.one_hot_encoder(word, length)
+            one_hot_words.append(encoded)
+            tag.append(int(self.accepts_input(word)))
             classified += 1
             if classified >= nb:
-                return np.array(classification)
+                return np.array(one_hot_words, dtype="float64"), np.array(tag, dtype="float64")
 
     def get_regex(self):
+        """
+        :return: regular expression of the automaton (str)
+        """
         return GNFA.from_nfa(self).to_regex()
 
     def save_automaton(self, name):
