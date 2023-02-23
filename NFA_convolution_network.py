@@ -7,20 +7,18 @@ class Automaton2Network:
     def __init__(self, automaton, train_set_size):
         """
         Creates a base for the creation of a network
-        :param automaton:
-        :param trainset_size:
+        :param automaton: automaton to be converted
+        :param train_set_size: size of the set of words used for training the model (int)
         """
         self.automaton = automaton
-        self.train_set = self.automaton.classify_words(train_set_size)
+        self.x_train, self.y_train = self.automaton.classify_words(train_set_size)
         self.network = None
-        self.x_train, self.y_train = np.hsplit(self.train_set, 2)
 
-    def create_network(self, nb_filters=32, nb_kernels=4, pooling_kernel=4):
+    def create_network(self, nb_layers=32, nb_kernels=4, pooling_kernel=4):
         model = ts.keras.Sequential()
-        model.add(ts.keras.layers.Conv1D(nb_filters,
+        model.add(ts.keras.layers.Conv1D(nb_layers,
                                          nb_kernels,
-                                         input_shape=(len(self.train_set[-1][0]),
-                                                      len(self.automaton.input_symbols))
+                                         input_shape=(np.shape(self.x_train[0]))
                                          )
                   )
         model.add(ts.keras.layers.Activation(ts.keras.activations.relu))
