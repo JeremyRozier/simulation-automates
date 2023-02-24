@@ -38,6 +38,8 @@ class Automaton2Network:
         model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
         model.fit(self.x_train, self.y_train, epochs=epochs_amount, batch_size=32, validation_split=0.2)
         if save:
+            if not os.path.exists("./stored_models"):
+                os.makedirs("./stored_models")
             num = len([name for name in os.listdir('./stored_models')]) + 1
             model.save("./stored_models/saved_model_{}".format(num))
             print("Model saved at 'stored_models/saved_model_{}'".format(num))
@@ -50,3 +52,9 @@ class Automaton2Network:
         :return: usable model
         """
         return tf.keras.models.load_model("./stored_models/saved_model_{}".format(number))
+
+
+if __name__ == "__main__":
+    auto = Automaton.random_automaton({"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
+    net = Automaton2Network(auto, 20000)
+    net.create_model(epochs_amount=4)
