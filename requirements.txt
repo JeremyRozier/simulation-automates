@@ -3,4 +3,4 @@ graphviz
 matplotlib~=3.4.3
 exrex~=0.10.5
 numpy~=1.21.2
-tensorflow~=2.11.0
+tensorflow
