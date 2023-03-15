@@ -10,19 +10,14 @@ import pickle
 
 class Automaton(NFA):
     def __init__(
-            self,
-            states,
-            input_symbols,
-            transitions,
-            initial_state,
-            final_states
+        self, states, input_symbols, transitions, initial_state, final_states
     ):
         super().__init__(
             states=states,
             input_symbols=input_symbols,
             transitions=transitions,
             initial_state=initial_state,
-            final_states=final_states
+            final_states=final_states,
         )
 
     def __setattr__(self, name, value):
@@ -31,15 +26,15 @@ class Automaton(NFA):
 
     @staticmethod
     def random_automaton(
-            alphabet,
-            min_states,
-            max_states,
-            trans_density,
-            init_amount,
-            final_amount,
-            init_range=0,
-            final_range=0,
-            seed=None
+        alphabet,
+        min_states,
+        max_states,
+        trans_density,
+        init_amount,
+        final_amount,
+        init_range=0,
+        final_range=0,
+        seed=None,
     ):
         """
         This function creates a random
@@ -78,10 +73,10 @@ class Automaton(NFA):
                                 trans[state_in] = {char: {state_out}}
         init = set()
         for i in range(
-                max(
-                    init_amount + random.randint(-init_range, init_range),
-                    1,
-                )
+            max(
+                init_amount + random.randint(-init_range, init_range),
+                1,
+            )
         ):
             if len(states.difference(init.union({"init"}))) > 0:
                 init.add(
@@ -95,10 +90,10 @@ class Automaton(NFA):
             trans["init"][""].add(i)
         final = set()
         for i in range(
-                max(
-                    final_amount + random.randint(-final_range, final_range),
-                    0,
-                )
+            max(
+                final_amount + random.randint(-final_range, final_range),
+                0,
+            )
         ):
             if len(states.difference(final.union({"init"}))) > 0:
                 final.add(
@@ -123,14 +118,18 @@ class Automaton(NFA):
         return super.__str__(self)
 
     def get_one_hot_index(self):
-        return {list(self.input_symbols)[i]: i for i in range(len(self.input_symbols))}
+        return {
+            list(self.input_symbols)[i]: i
+            for i in range(len(self.input_symbols))
+        }
 
     def one_hot_encoder(self, word, length):
         """
         This function encode a word in the one-hot format
         :param word: word to encode (str)
         :param length: length of the one-hot array used for encoding
-        :return: array with shape (len(self.input_symbols), length) filled with 0 and 1
+        :return: array with shape (len(self.input_symbols), length)
+        filled with 0 and 1
         """
         encoded = np.zeros((len(self.input_symbols), length))
         for i in range(len(word)):
@@ -146,7 +145,11 @@ class Automaton(NFA):
         word = ""
         one_hot_index = tuple(self.get_one_hot_index().keys())
         for col in range(np.shape(encoded)[1]):
-            index = np.argwhere(np.hsplit(encoded, np.shape(encoded)[1])[col].reshape((np.shape(encoded)[0],)))
+            index = np.argwhere(
+                np.hsplit(encoded, np.shape(encoded)[1])[col].reshape(
+                    (np.shape(encoded)[0],)
+                )
+            )
             if np.shape(index)[0]:
                 word += one_hot_index[index[0][0]]
             else:
@@ -169,7 +172,7 @@ class Automaton(NFA):
             self.input_symbols,
             {0: {char: {0} for char in self.input_symbols}},
             0,
-            {0}
+            {0},
         ).get_regex()
         one_hot_words = []
         tag = []
@@ -180,7 +183,9 @@ class Automaton(NFA):
             tag.append(int(self.accepts_input(word)))
             classified += 1
             if classified >= nb:
-                return np.array(one_hot_words, dtype="float64"), np.array(tag, dtype="float64")
+                return np.array(one_hot_words, dtype="float64"), np.array(
+                    tag, dtype="float64"
+                )
 
     def get_regex(self):
         """
@@ -196,12 +201,16 @@ class Automaton(NFA):
         """
         file_name = "{}.pkl".format(name)
         with open(file_name, "wb") as file:
-            pickle.dump((self.states,
-                         self.input_symbols,
-                         self.transitions,
-                         self.initial_state,
-                         self.final_states)
-                        , file)
+            pickle.dump(
+                (
+                    self.states,
+                    self.input_symbols,
+                    self.transitions,
+                    self.initial_state,
+                    self.final_states,
+                ),
+                file,
+            )
             print("Automaton saved in {}".format(file_name))
 
     @staticmethod

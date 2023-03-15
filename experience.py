@@ -3,10 +3,9 @@ import numpy as np
 from automaton_handler import Automaton
 from NFA_convolution_network import *
 import os
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 import matplotlib.pyplot as plt
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def test_parameter(
@@ -47,7 +46,7 @@ def test_parameter(
         automaton = Automaton.random_automaton(**params)
 
         net = Automaton2Network(automaton, 20000)
-        acc = net.create_model(epochs_amount=4)
+        acc = net.create_convolut_model(epochs_amount=4)
 
         accuracies.append(acc[-1])
 
