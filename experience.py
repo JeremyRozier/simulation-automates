@@ -46,29 +46,67 @@ def parameter_test(
         params[param_name] = param_value
         automaton = Automaton.random_automaton(**params)
 
-        net = Automaton2Network(automaton, 200)
-        acc = net.create_model(epochs_amount=1, save=False, verbose=False)
+        net = Automaton2Network(automaton, 20000)
+        acc = net.create_convolut_model(epochs_amount=3, save=False)
 
         accuracies.append(acc[-1])
     accuracy = np.average((np.array(accuracies)))
     print(accuracy)
 
 
-    """# plot accuracy curve
+    # plot accuracy curve
     plt.plot(param_values, accuracies)
     plt.xlabel("amount of" + param_name)
     plt.ylabel("Accuracy at the end of training")
-    plt.show()"""
+    plt.show()
 
-parameter_test("trans_density", [0.2 for i in range(100)], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
-# test_parameter("alphabet", [2, 3, 4], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
+def training_test(
+    max_training_amount,
+    discretion_amount,
+    alphabet,
+    min_states,
+    max_states,
+    trans_density,
+    init_amount,
+    final_amount,
+    init_range=0,
+    final_range=0,
+    seed=None,
+):
+    data_epoch = max_training_amount//discretion_amount
+    accuracies = []
+    data_set = []
+    # create automaton with current param value
+    params = {
+        "alphabet": alphabet,
+        "min_states": min_states,
+        "max_states": max_states,
+        "trans_density": trans_density,
+        "init_amount": init_amount,
+        "final_amount": final_amount,
+        "init_range": init_range,
+        "final_range": final_range,
+        "seed": seed,
+    }
+    data_count = data_epoch
+    automaton = Automaton.random_automaton(**params)
+    for i in range(discretion_amount):
+        data_set.append(data_count)
+        net = Automaton2Network(automaton, data_set[-1])
+        acc = net.create_recurrent_model(epochs_amount = 4, save=False)
+        accuracies.append(acc[-1])
+        data_count = data_epoch + data_set[-1]
 
 
-"""X = [0, 0.1, 0.15, 0.175, 0.1875, 0.2, 0.225, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-Y = [1.0, 0.9551799994707107, 0.9231600013375282, 0.8959400001168251, 0.898860000371933, 0.895760001540184,
-     0.933140001296997, 0.9196100005507469, 0.9536899998784065, 0.971180000603199, 0.995469999909401, 1.0, 1.0, 1.0,
-     1.0, 1.0]
+    # plot accuracy curve
+    plt.plot(data_set, accuracies)
+    plt.xlabel("amount of epoch" )
+    plt.ylabel("Accuracy at the end of training")
+    plt.show()
 
-plt.plot(X, Y)
-plt.show()
-"""
+# parameter_test("trans_density", [0.2 for i in range(100)], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
+# parameter_test("max_states", [6,7,8,9,10,11,12,13,14,15], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
+training_test(500,25, {"a", "b"}, 5, 15, 0.12, 2, 2, 1, 1)
+
+
+
