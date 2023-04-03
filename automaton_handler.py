@@ -1,5 +1,6 @@
 import random
 from automata.fa.nfa import NFA
+from automata.fa.dfa import DFA
 from automata.fa.gnfa import GNFA
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -104,6 +105,57 @@ class Automaton(NFA):
             else:
                 break
         return Automaton(states, alphabet, trans, "init", final)
+
+    @staticmethod
+    def simple_random_automaton(states_amount, alphabet=None, final_proportion=0.1):
+        """
+        This function creates a random complete and deterministic automaton.
+        The proportion of final states and the alphabet are set manually and will not be changed
+        :param states_amount: Amount of states in the random automaton
+        :param alphabet: Alphabet of the automaton (default at 10 characters alphabet)
+        :param final_proportion: Proportion of final states among all states (default at 0.1)
+        :return: an automaton
+        """
+        if alphabet is None:
+            alphabet = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+        states = set([i for i in range(states_amount)])
+        init = 0
+        trans = dict()
+        for source in list(states):
+            trans[source] = dict()
+            for char in list(alphabet):
+                trans[source][char] = {random.choice(list(states))}
+        final = set(random.choices(list(states), k=max((1, round(states_amount * final_proportion)))))
+        return Automaton(states, alphabet, trans, init, final)
+
+    @staticmethod
+    def minimal_random_automaton(max_states_amount, alphabet=None, final_proportion=0.1):
+        """
+        This function creates a random minimal, complete and deterministic automaton.
+        The proportion of final states and the alphabet are set manually and will not be changed
+        :param max_states_amount: Maximal amount of states in the automaton
+        :param alphabet: Alphabet of the automaton (default at 10 characters alphabet)
+        :param final_proportion: Proportion of final states among all states (default at 0.1)
+        :return: an automaton
+        """
+        if alphabet is None:
+            alphabet = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+        states = set([i for i in range(max_states_amount)])
+        init = 0
+        trans = dict()
+        for source in list(states):
+            trans[source] = dict()
+            for char in list(alphabet):
+                trans[source][char] = random.choice(list(states))
+        final = set(random.choices(list(states), k=max((1, round(max_states_amount * final_proportion)))))
+        deterministic = DFA(states=states,
+                            input_symbols=alphabet,
+                            transitions=trans,
+                            initial_state=init,
+                            final_states=final
+                            )
+        minimal = deterministic.minify()
+        return Automaton.from_dfa(minimal)
 
     def __str__(self):
         try:
@@ -227,13 +279,13 @@ class Automaton(NFA):
 
 if __name__ == "__main__":
     alphabet = {"a", "b"}
-    min_states = 5
-    max_states = 10
+    min_states = 4
+    max_states = 4
     trans_density = 0.12
-    init_amount = 2
-    final_amount = 2
-    init_range = 1
-    final_range = 1
+    init_amount = 1
+    final_amount = 1
+    init_range = 0
+    final_range = 0
     automaton = Automaton.random_automaton(
         alphabet,
         min_states,
@@ -244,3 +296,4 @@ if __name__ == "__main__":
         init_range,
         final_range,
     )
+    print(automaton)
