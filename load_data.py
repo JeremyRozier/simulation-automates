@@ -9,10 +9,12 @@ csv_file_path = "automaton_accuracies.csv"
 
 # Create a list of all the automata file names and their sizes
 automata_files = []
-folder_path = os.path.join(stored_automatons_path, f"size_1")
-automata_names = os.listdir(folder_path)
-for name in automata_names:
-    automata_files.append((1, os.path.join(folder_path, name)))
+size_range = range(1,48)
+for size in size_range:
+    folder_path = os.path.join(stored_automatons_path, f"size_{size}")
+    automata_names = os.listdir(folder_path)
+    for name in automata_names:
+        automata_files.append((size, os.path.join(folder_path, name)))
 
 # Create a list to hold the accuracy and file name for each automaton
 accuracy_list = []
