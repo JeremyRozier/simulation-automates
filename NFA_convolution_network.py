@@ -67,7 +67,6 @@ class Automaton2Network:
             batch_size=32,
             validation_split=0.2,
         )
-        print('eeeee', history.history)
         accuracies = history.history["accuracy"]
         if save:
             if not os.path.exists("./stored_models"):
@@ -83,17 +82,17 @@ class Automaton2Network:
         epochs_amount=15,
         save=True,
     ):
-        print(
-            "Creating model for the regular expression: {}".format(
-                self.automaton.get_regex()
-            )
-        )
+        # print(
+        #     "Creating model for the regular expression: {}".format(
+        #         self.automaton.get_regex()
+        #     )
+        # )
         inp = np.shape(self.x_train[0])
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.LSTM(nb_nodes, input_shape=inp, return_sequences=False))
+        model.add(tf.keras.layers.GRU(nb_nodes))
         model.add(tf.keras.layers.Dense(units=1))
         model.add(tf.keras.layers.Activation(tf.keras.activations.sigmoid))
-        print(model.summary())
+        # print(model.summary())
         model.compile(
             loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"]
         )
@@ -123,6 +122,14 @@ class Automaton2Network:
         return tf.keras.models.load_model(
             "./stored_models/saved_model_{}".format(number)
         )
+    
+
+    @staticmethod
+    def get_accuracy(automata , dataset = 5000):
+        net = Automaton2Network(automata, dataset)
+        acc = net.create_recurrent_model(epochs_amount = 4, save=False)
+        return acc[-1]
+
 
 
 if __name__ == "__main__":
