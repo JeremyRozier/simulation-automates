@@ -7,6 +7,7 @@ import matplotlib.image as mpimg
 import exrex
 import numpy as np
 import pickle
+import os
 
 
 class Automaton(NFA):
@@ -276,24 +277,50 @@ class Automaton(NFA):
             info = pickle.load(file)
             return Automaton(info[0], info[1], info[2], info[3], info[4])
 
+    @staticmethod
+    def minimal_generator(maximum_gen, max_states_amount, alphabet=None, final_proportion=0.1):
+        """
+        Minimal automaton generator saved in files, classified by their amount of states
+        :param maximum_gen: Maximum amount of automaton to generate, otherwise use KeyboardInterrupt
+        :param max_states_amount: Maximum amount of states in the automaton
+        :param alphabet: Alphabet of the automatons
+        :param final_proportion: Proportion of final states in the automaton
+        :return: None
+        """
+        for i in range(maximum_gen):
+            aut = Automaton.minimal_random_automaton(max_states_amount,
+                                                     alphabet=alphabet,
+                                                     final_proportion=final_proportion
+                                                     )
+            size = len(aut.states)
+            if not os.path.exists("./stored_automatons"):
+                os.makedirs("./stored_automatons")
+            if not os.path.exists("./stored_automatons/size_{}".format(size)):
+                os.makedirs("./stored_automatons/size_{}".format(size))
+            num = len([name for name in os.listdir("./stored_automatons/size_{}".format(size))]) + 1
+            if num > 100:
+                print("Size {}: limit reached".format(size))
+            else:
+                aut.save_automaton("./stored_automatons/size_{}/aut_{}".format(size, num))
+        return
+
+    @staticmethod
+    def stored_overview():
+        """
+        Display the amount of automatons stored for each size
+        :return: None
+        """
+        i = 1
+        while True:
+            if os.path.exists("./stored_automatons/size_{}".format(i)):
+                print("Size {}: amount {}".format(
+                    i,
+                    len([name for name in os.listdir("./stored_automatons/size_{}".format(i))])
+                ))
+                i += 1
+            else:
+                break
+
 
 if __name__ == "__main__":
-    alphabet = {"a", "b"}
-    min_states = 4
-    max_states = 4
-    trans_density = 0.12
-    init_amount = 1
-    final_amount = 1
-    init_range = 0
-    final_range = 0
-    automaton = Automaton.random_automaton(
-        alphabet,
-        min_states,
-        max_states,
-        trans_density,
-        init_amount,
-        final_amount,
-        init_range,
-        final_range,
-    )
-    print(automaton)
+    Automaton.stored_overview()

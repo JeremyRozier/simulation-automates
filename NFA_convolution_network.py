@@ -4,6 +4,7 @@ import os
 import tensorflow as tf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
+
 class Automaton2Network:
     def __init__(self, automaton, train_set_size):
         """
@@ -132,7 +133,7 @@ if __name__ == "__main__":
         print("No GPU found. Running on CPU")
     auto = Automaton.random_automaton({"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
     net = Automaton2Network(auto, 20000)
-    c = net.create_convolut_model(epochs_amount=4)
+    c = net.create_convolut_model(epochs_amount=4, save=True)
     r = net.create_recurrent_model(epochs_amount=4)
-    print(c,r)
+    print(c, r)
 
