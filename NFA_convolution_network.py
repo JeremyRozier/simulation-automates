@@ -127,7 +127,7 @@ class Automaton2Network:
     @staticmethod
     def get_accuracy(automata , dataset = 5000):
         net = Automaton2Network(automata, dataset)
-        acc = net.create_recurrent_model(epochs_amount = 4, save=False)
+        acc = net.create_recurrent_model(epochs_amount = 1, save=False)
         return acc[-1]
 
 
