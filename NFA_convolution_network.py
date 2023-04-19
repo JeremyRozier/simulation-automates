@@ -13,7 +13,7 @@ class Automaton2Network:
         :param train_set_size: size of the set of words used for training the model (int)
         """
         self.automaton = automaton
-        self.x_train, self.y_train = self.automaton.classify_words(
+        self.x_train, self.y_train = self.automaton.classify_words_derivation(
             train_set_size
         )
 
