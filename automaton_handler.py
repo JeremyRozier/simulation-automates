@@ -213,6 +213,22 @@ class Automaton(NFA):
             encoded[self.get_one_hot_index()[word[i]]][i] = 1
         return encoded
 
+    def one_hot_encoder_derivation(self, data, length):
+        """
+        This function encode a word and its derivation in one-hot format
+        :param data: list of word and its derivation (list(str, list))
+        :param length: length of the one-hot array used for encoding
+        :return: array with shape (max(states amount, input_symbols amount), 2 * length + 1) filled with 0 and 1
+        """
+        word_length = len(data[0])
+        encoded = np.zeros((max(len(self.input_symbols), len(self.states)), 2 * length + 1))
+        for i in range(len(data[0]) + len(data[1])):
+            if i < word_length:
+                encoded[self.get_one_hot_index()[data[0][i]]][i] = 1
+            else:
+                encoded[data[1][i - word_length]][i - word_length + length] = 1
+        return encoded
+
     def one_hot_decoder(self, encoded):
         """
         This function returns the word encoded in a one-hot array
@@ -253,7 +269,7 @@ class Automaton(NFA):
         ).get_regex()
         one_hot_words = []
         tag = []
-        length = round(np.log(nb) / np.log(len(self.input_symbols))) + 1
+        length = max(1, round(np.log(nb) / np.log(len(self.input_symbols))))
         for word in exrex.generate(sigma_star, limit=100):
             encoded = self.one_hot_encoder(word, length)
             one_hot_words.append(encoded)
@@ -261,6 +277,40 @@ class Automaton(NFA):
             classified += 1
             if classified >= nb:
                 return np.array(one_hot_words, dtype="float64"), np.array(
+                    tag, dtype="float64"
+                )
+
+    def classify_words_derivation(self, nb):
+        """
+        This function creates a 2 array. One with shape (nb, alphabet_length, word_max_length) where nb in the number of
+        words classified, alphabet_length is the amount of character in the alphabet and word_max_length is the length
+        of the longest word classified. Ths array stores all the words classified encoded in one hot format.
+        The second array with shape (nb, ) stores a one in it's x index if the x classified word if accepted by the
+        automaton and a 0 otherwise.
+        :param nb: number of word to classify
+        :return: 2 arrays with shape (nb, alphabet_length, word_max_length) and (nb, ) and dtype=float64
+        """
+        classified = 0
+        sigma_star = Automaton(
+            {0},
+            self.input_symbols,
+            {0: {char: {0} for char in self.input_symbols}},
+            0,
+            {0},
+        ).get_regex()
+        one_hot_data = []
+        tag = []
+        length = max(1, round(np.log(nb) / np.log(len(self.input_symbols))))
+        for word in exrex.generate(sigma_star, limit=100):
+            if len(word) == 0:
+                continue
+            tested = self.accepts_input_derivation(word)
+            encoded = self.one_hot_encoder_derivation([word, tested[1]], length)
+            one_hot_data.append(encoded)
+            tag.append(int(tested[0]))
+            classified += 1
+            if classified >= nb:
+                return np.array(one_hot_data, dtype="float64"), np.array(
                     tag, dtype="float64"
                 )
 
@@ -348,6 +398,5 @@ class Automaton(NFA):
 
 if __name__ == "__main__":
     aut = Automaton.minimal_random_automaton(6, alphabet={'a', 'b'})
-    print(aut.accepts_input_derivation("abbab"))
-    print(aut.accepts_input_derivation("aaabba"))
+    print(aut.classify_words_derivation(4))
     print(aut)
