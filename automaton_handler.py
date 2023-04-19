@@ -170,6 +170,30 @@ class Automaton(NFA):
         plt.show()
         return super.__str__(self)
 
+    def compute_next(self, origin, transition):
+        """
+        Given a complete deterministic automaton, a starting state and an element of the automaton's alphabet, this
+        function compute the state you end up when you transition with the element of the alphabet from the starting
+        state.
+        :param origin: starting state
+        :param transition: element of the alphabet to use as transition
+        :return: the state of the transition from origin
+        """
+        return set(self.transitions[origin][transition]).pop()
+
+    def accepts_input_derivation(self, word):
+        """
+        This function tells whether a word is accepted or declined in a complete deterministic automaton. And tells the
+        path followed by the word in the automaton.
+        :param word: word to test
+        :return: True if the word is accepted false otherwise, the list of states in order during validation
+        """
+        derivation = [self.initial_state]
+        for char in word:
+            derivation.append(self.compute_next(derivation[-1], char))
+        accepted = derivation[-1] in self.final_states
+        return accepted, derivation
+
     def get_one_hot_index(self):
         return {
             list(self.input_symbols)[i]: i
@@ -323,4 +347,7 @@ class Automaton(NFA):
 
 
 if __name__ == "__main__":
-    Automaton.stored_overview()
+    aut = Automaton.minimal_random_automaton(6, alphabet={'a', 'b'})
+    print(aut.accepts_input_derivation("abbab"))
+    print(aut.accepts_input_derivation("aaabba"))
+    print(aut)
