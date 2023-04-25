@@ -80,7 +80,8 @@ class Automaton2Network:
         self,
         nb_nodes=64,
         epochs_amount=15,
-        save=True,
+        save = True,
+        units = 64
     ):
         # print(
         #     "Creating model for the regular expression: {}".format(
@@ -89,6 +90,8 @@ class Automaton2Network:
         # )
         inp = np.shape(self.x_train[0])
         model = tf.keras.Sequential()
+        if units != 64:
+            nb_nodes = units
         model.add(tf.keras.layers.GRU(nb_nodes))
         model.add(tf.keras.layers.Dense(units=1))
         model.add(tf.keras.layers.Activation(tf.keras.activations.sigmoid))
@@ -125,10 +128,11 @@ class Automaton2Network:
     
 
     @staticmethod
-    def get_accuracy(automata , dataset = 5000):
+    def get_accuracy(automata , dataset = 5000, units = 64):
         net = Automaton2Network(automata, dataset)
-        acc = net.create_recurrent_model(epochs_amount = 1, save=False)
+        acc = net.create_recurrent_model(epochs_amount = 1, save=False, units = units)
         return acc[-1]
+        
 
 
 

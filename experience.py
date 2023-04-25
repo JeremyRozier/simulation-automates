@@ -60,53 +60,32 @@ def parameter_test(
     plt.ylabel("Accuracy at the end of training")
     plt.show()
 
-def training_test(
-    max_training_amount,
-    discretion_amount,
-    alphabet,
-    min_states,
-    max_states,
-    trans_density,
-    init_amount,
-    final_amount,
-    init_range=0,
-    final_range=0,
-    seed=None,
+def vector_test(
+    min_size,
+    max_size
 ):
-    data_epoch = max_training_amount//discretion_amount
-    accuracies = []
+    
     data_set = []
-    # create automaton with current param value
-    params = {
-        "alphabet": alphabet,
-        "min_states": min_states,
-        "max_states": max_states,
-        "trans_density": trans_density,
-        "init_amount": init_amount,
-        "final_amount": final_amount,
-        "init_range": init_range,
-        "final_range": final_range,
-        "seed": seed,
-    }
-    data_count = data_epoch
-    automaton = Automaton.random_automaton(**params)
-    for i in range(discretion_amount):
-        data_set.append(data_count)
-        net = Automaton2Network(automaton, data_set[-1])
-        acc = net.create_recurrent_model(epochs_amount = 4, save=False)
-        accuracies.append(acc[-1])
-        data_count = data_epoch + data_set[-1]
+    for i in range(min_size, max_size):
+        data_set.append(i)
+    for s in range(1,3):
+        accuracies = []
+        automaton = Automaton.load_automaton(f'simulation-automates/stored_automatons/size_{s}/aut_1.pkl')
+        for i in data_set:
+            acc = Automaton2Network.get_accuracy(automaton, units = i)
+            accuracies.append(acc)
+        plt.plot(data_set, accuracies, label = f'{s} nodes' )
 
 
     # plot accuracy curve
-    plt.plot(data_set, accuracies)
-    plt.xlabel("amount of epoch" )
+    
+    plt.xlabel("size of state vector" )
     plt.ylabel("Accuracy at the end of training")
     plt.show()
 
 # parameter_test("trans_density", [0.2 for i in range(100)], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
 # parameter_test("max_states", [6,7,8,9,10,11,12,13,14,15], {"a", "b"}, 5, 10, 0.12, 2, 2, 1, 1)
-training_test(500,25, {"a", "b"}, 5, 15, 0.12, 2, 2, 1, 1)
+vector_test(20,23)
 
 
 
