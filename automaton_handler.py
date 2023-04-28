@@ -209,6 +209,8 @@ class Automaton(NFA):
         filled with 0 and 1
         """
         encoded = np.zeros((len(self.input_symbols), length))
+        print(word)
+        print(encoded)
         for i in range(len(word)):
             encoded[self.get_one_hot_index()[word[i]]][i] = 1
         return encoded
@@ -249,7 +251,7 @@ class Automaton(NFA):
                 break
         return word
 
-    def classify_words(self, nb):
+    def classify_words(self, nb , prop = False):
         """
         This function creates a 2 array. One with shape (nb, alphabet_length, word_max_length) where nb in the number of
         words classified, alphabet_length is the amount of character in the alphabet and word_max_length is the length
@@ -259,26 +261,63 @@ class Automaton(NFA):
         :param nb: number of word to classify
         :return: 2 arrays with shape (nb, alphabet_length, word_max_length) and (nb, ) and dtype=float64
         """
-        classified = 0
-        sigma_star = Automaton(
-            {0},
-            self.input_symbols,
-            {0: {char: {0} for char in self.input_symbols}},
-            0,
-            {0},
-        ).get_regex()
-        one_hot_words = []
-        tag = []
-        length = max(1, round(np.log(nb) / np.log(len(self.input_symbols))))
-        for word in exrex.generate(sigma_star, limit=100):
-            encoded = self.one_hot_encoder(word, length)
-            one_hot_words.append(encoded)
-            tag.append(int(self.accepts_input(word)))
-            classified += 1
-            if classified >= nb:
-                return np.array(one_hot_words, dtype="float64"), np.array(
-                    tag, dtype="float64"
-                )
+        if prop:
+            classified = 0
+            sigma_star = Automaton(
+                {0},
+                self.input_symbols,
+                {0: {char: {0} for char in self.input_symbols}},
+                0,
+                {0},
+            ).get_regex()
+            lang = self.get_regex()
+            one_hot_words = []
+            tag = []
+            length = max(1, round(np.log(nb) / np.log(len(self.input_symbols))))
+            if len(exrex.generate(lang, limit=100)) < 2500:
+                return None, None
+            for word in exrex.generate(lang, limit=100):
+                print(word)
+                encoded = self.one_hot_encoder(word, length)
+                one_hot_words.append(encoded)
+                print(self.accepts_input(word))
+                tag.append(int(self.accepts_input(word)))
+                if self.accepts_input(word):
+                    classified += 1
+                if classified >= nb//2:
+                    for word in exrex.generate(sigma_star, limit=100):
+                        encoded = self.one_hot_encoder(word, length)
+                        one_hot_words.append(encoded)
+                        print(self.accepts_input(word))
+                        tag.append(int(self.accepts_input(word)))
+                        if self.accepts_input(word) == False:
+                            classified += 1
+                        if classified >= nb:
+                            return np.array(one_hot_words, dtype="float64"), np.array(
+                                tag, dtype="float64"
+                            )
+        else:
+            classified = 0
+            sigma_star = Automaton(
+                {0},
+                self.input_symbols,
+                {0: {char: {0} for char in self.input_symbols}},
+                0,
+                {0},
+            ).get_regex()
+            one_hot_words = []
+            tag = []
+            length = max(1, round(np.log(nb) / np.log(len(self.input_symbols))))
+            for word in exrex.generate(sigma_star, limit=100):
+                print(word)
+                encoded = self.one_hot_encoder(word, length)
+                one_hot_words.append(encoded)
+                tag.append(int(self.accepts_input(word)))
+                classified += 1
+                if classified >= nb:
+                    return np.array(one_hot_words, dtype="float64"), np.array(
+                        tag, dtype="float64"
+                    )
 
     def classify_words_derivation(self, nb):
         """
@@ -398,5 +437,5 @@ class Automaton(NFA):
 
 if __name__ == "__main__":
     aut = Automaton.minimal_random_automaton(6, alphabet={'a', 'b'})
-    print(aut.classify_words_derivation(4))
-    print(aut)
+    aut.classify_words(4,prop=True)
+    

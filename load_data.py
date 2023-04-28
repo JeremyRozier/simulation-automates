@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # is_automaton_found = False
 
 # # Set up the paths to the stored automata and the CSV file
-# csv_file_path = "automaton_accuracies.csv"
+# csv_file_path = "simulation-automates/half_automaton_accuracies.csv"
 # if os.path.exists(csv_file_path):
 #     with open(csv_file_path, "r") as f:
 #         # Créer un objet csv à partir du fichier
@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 # size_range = range(1, 49)
 # for size in size_range:
 #     name_indexes = (0, 101)
-#     folder_path = f"stored_automatons/size_{size}"
+#     folder_path = f"simulation-automates/stored_automatons_half/stored_automatons_half/size_{size}"
 #     automata_names = os.listdir(folder_path)
 #     if (
 #         not is_automaton_found
@@ -65,42 +65,42 @@ import matplotlib.pyplot as plt
 #                 writer.writerow(accuracy)
 #         accuracy_list.clear()
 
-csv_file_der = "simulation-automates/automaton_accuracies_derivation.csv"
-csv_file = "simulation-automates/automaton_accuracies.csv"
+csv_file = "simulation-automates/half_automaton_accuracies.csv"
+csv_file_der = "simulation-automates/automaton_accuracies.csv"
 
 # Load the CSV file into a Pandas DataFrame
 df = pd.read_csv(csv_file_der)
 dt = pd.read_csv(csv_file)
 
 
-# # Group the data by Size and compute the min and max accuracy values for each Size
-# grouped_data_der = df.groupby("Size").agg({"Accuracy": ["min", "max"]})
-# grouped_data_der.columns = ["_".join(col) for col in grouped_data_der.columns]
-# grouped_data = dt.groupby("Size").agg({"Accuracy": ["min", "max"]})
-# grouped_data.columns = ["_".join(col) for col in grouped_data.columns]
+# Group the data by Size and compute the min and max accuracy values for each Size
+grouped_data_der = df.groupby("Size").agg({"Accuracy": ["min", "max"]})
+grouped_data_der.columns = ["_".join(col) for col in grouped_data_der.columns]
+grouped_data = dt.groupby("Size").agg({"Accuracy": ["min", "max"]})
+grouped_data.columns = ["_".join(col) for col in grouped_data.columns]
 
-# # Plot the min and max accuracy values for each Size on a graph
-# plt.plot(grouped_data_der.index, grouped_data_der["Accuracy_min"], label="Min Accuracy with derivation")
-# plt.plot(grouped_data_der.index, grouped_data_der["Accuracy_max"], label="Max Accuracy with derivation")
-# plt.plot(grouped_data.index, grouped_data["Accuracy_min"], label="Min Accuracy without derivation")
-# plt.plot(grouped_data.index, grouped_data["Accuracy_max"], label="Max Accuracy without derivation")
-# plt.xlabel("Size")
-# plt.ylabel("Accuracy")
-# plt.title("Min and Max Accuracy by Size")
-# plt.legend()
-# plt.savefig('min_max_der.png')
-# plt.show()
+# Plot the min and max accuracy values for each Size on a graph
+plt.plot(grouped_data_der.index, grouped_data_der["Accuracy_min"], label="Min Accuracy with 10% final")
+plt.plot(grouped_data_der.index, grouped_data_der["Accuracy_max"], label="Max Accuracy with 10% final")
+plt.plot(grouped_data.index, grouped_data["Accuracy_min"], label="Min Accuracy with 65% final")
+plt.plot(grouped_data.index, grouped_data["Accuracy_max"], label="Max Accuracy with 65% final")
+plt.xlabel("Size")
+plt.ylabel("Accuracy")
+plt.title("Min and Max Accuracy by Size")
+plt.legend()
+plt.savefig('min_max_65.png')
+plt.show()
 
 grouped_data_der = df.groupby("Size").mean()
 grouped_data = dt.groupby("Size").mean()
 
 # Plot the mean accuracy for each Size on a graph
-plt.plot(grouped_data_der.index, grouped_data_der["Accuracy"], label="Mean Accuracy with derivation")
-plt.plot(grouped_data.index, grouped_data["Accuracy"], label="Mean Accuracy without derivation")
+plt.plot(grouped_data_der.index, grouped_data_der["Accuracy"], label="Mean Accuracy with 10% final")
+plt.plot(grouped_data.index, grouped_data["Accuracy"], label="Mean Accuracy with 65% final")
 plt.xlabel("Size")
 plt.ylabel("Accuracy")
 plt.title("Mean Accuracy by Size")
 plt.legend()
-plt.savefig('mean_acc_der.png')
+plt.savefig('mean_acc_65.png')
 plt.show()
 

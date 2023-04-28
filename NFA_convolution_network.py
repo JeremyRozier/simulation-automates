@@ -13,8 +13,9 @@ class Automaton2Network:
         :param train_set_size: size of the set of words used for training the model (int)
         """
         self.automaton = automaton
-        self.x_train, self.y_train = self.automaton.classify_words_derivation(
-            train_set_size
+        self.x_train, self.y_train = self.automaton.classify_words(
+            train_set_size,
+            prop = True
         )
 
     def create_convolut_model(
@@ -88,6 +89,8 @@ class Automaton2Network:
         #         self.automaton.get_regex()
         #     )
         # )
+        if self.x_train == None:
+            return None
         inp = np.shape(self.x_train[0])
         model = tf.keras.Sequential()
         if units != 64:
@@ -131,6 +134,8 @@ class Automaton2Network:
     def get_accuracy(automata , dataset = 5000, units = 64):
         net = Automaton2Network(automata, dataset)
         acc = net.create_recurrent_model(epochs_amount = 1, save=False, units = units)
+        if acc == None:
+            return None 
         return acc[-1]
         
 
